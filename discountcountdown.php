@@ -87,18 +87,18 @@ class Discountcountdown extends Module
 
     private function verifyDiscountFromDb($id_discount)
     {
-        $discountdb = DC::getAll(array('c.id_discountcountdown' => $id_discount, 'c.active' => 1));
+        if (!$this->is_inspector()) {
+            $discountdb = DC::getAll(array('c.id_discountcountdown' => $id_discount, 'c.active' => 1));
 //discount doesn't exist
-        if (!$discountdb) {
-            return;
+            if ($discountdb) {
+                $discountdb = $discountdb[0];
+                if ($discountdb['date_to'] && $discountdb['date_to'] != '0000-00-00 00:00:00' && time() > strtotime($discountdb['date_to'])) {
+                    return;
+                }
+                $discountdb['options'] = Tools::jsonDecode($discountdb['options']);
+                return $discountdb;
+            }
         }
-        $discountdb = $discountdb[0];
-//discount expired
-        if ($discountdb['date_to'] && $discountdb['date_to'] != '0000-00-00 00:00:00' && time() > strtotime($discountdb['date_to'])) {
-            return;
-        }
-
-        return $discountdb;
     }
 
     public function verifyDiscount()
@@ -124,7 +124,7 @@ class Discountcountdown extends Module
             }
 
             if (isset($id_discount_from_cookie) && isset($id_discount_from_url) && $id_discount_from_cookie != $id_discount_from_url) {
-// if different, set new, or TODO prioritize
+                // if different, set new, or TODO prioritize
             }
             if (!$discountdb) {
                 return;
@@ -139,6 +139,9 @@ class Discountcountdown extends Module
 //expiration
             if ($activated + ($discountdb['expiration'] * 3600) < time()) {
                 return;
+            }
+            if(isset($id_discount_from_url)){
+                $this->context->smarty->assign('dc_message',$this->l('Your discount is activated.'));
             }
             $this->context->smarty->assign(array('dc' => $discountdb));
             $this->context->smarty->assign(array('dc_activated' => $activated + ($discountdb['expiration'] * 3600)));

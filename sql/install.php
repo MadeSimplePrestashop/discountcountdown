@@ -33,8 +33,7 @@ $sql[] = 'CREATE TABLE IF NOT EXISTS `' . _DB_PREFIX_ . 'discountcountdown` (
     `date_to` DATETIME NULL,
     `availability` int(3) NOT NULL,
     `display_header` int(3) NOT NULL,
-    `element` varchar(255),
-    `insert` varchar(10),
+    `options` TEXT,    
     `active` int(3) NOT NULL,    
     PRIMARY KEY  (`id_discountcountdown`)
 ) ENGINE=' . _MYSQL_ENGINE_ . ' DEFAULT CHARSET=utf8;';

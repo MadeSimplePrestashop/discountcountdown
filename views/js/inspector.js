@@ -85,6 +85,9 @@ $(document).ready(function () {
                 tagSelector = tagName + cssId + cssClass;
             } else if (cssClass) {
                 // Matched by class (will be checked for multiples afterwards):
+                if(cssClass.slice(-1) == '.'){
+                    cssClass = cssClass.substring(0, cssClass.length - 1);
+                }
                 tagSelector = tagName + cssClass;
             } else {
                 // Couldn't match by ID or class, so use ":nth-child()" instead:

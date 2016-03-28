@@ -17,11 +17,10 @@ class DC extends ObjectModel
     public $date_to;
     public $countdown_format;
     public $active;
-    public $availability;
+    //public $availability;
     public $caption;
     public $display_header;
-    public $element;
-    public $insert;
+    public $options;
 
     public function __construct($id = null, $id_lang = null, $id_shop = null)
     {
@@ -47,11 +46,10 @@ class DC extends ObjectModel
             'id_group' => array('type' => self::TYPE_INT, 'required' => true),
             'expiration' => array('type' => self::TYPE_INT, 'required' => true),
             'countdown_format' => array('type' => self::TYPE_INT, 'required' => true),
-            'availability' => array('type' => self::TYPE_INT, 'required' => true),
+            //'availability' => array('type' => self::TYPE_INT, 'required' => true),
             'active' => array('type' => self::TYPE_BOOL, 'required' => true),
             'display_header' => array('type' => self::TYPE_BOOL),
-            'element' => array('type' => self::TYPE_STRING),
-            'insert' => array('type' => self::TYPE_STRING),
+            'options' => array('type' => self::TYPE_STRING, 'validate' => 'isString'),
             'date_to' => array('type' => self::TYPE_DATE),
             'caption' => array('type' => self::TYPE_HTML, 'lang' => true),
         )
@@ -75,8 +73,55 @@ class DC extends ObjectModel
         return Db::getInstance()->executeS($sql);
     }
 
+    public function add($autodate = true, $null_values = false)
+    {
+        $options = $this->transform_options();
+        if ($options != false)
+            $this->options = $options;
+
+
+        if ($this->id_group) {
+            Db::getInstance()->execute('DELETE FROM `' . _DB_PREFIX_ . 'category_group` WHERE `id_group` = ' . (int) $this->id_group);
+            $categories = Category::getAllCategoriesName(null, Context::getContext()->language->id);
+            foreach ($categories as $category) {
+                Db::getInstance()->execute('INSERT INTO `' . _DB_PREFIX_ . 'category_group` 
+                    (`id_category`, `id_group`)
+		VALUES (' . (int) $category['id_category'] . ', ' . (int) $this->id_group . ')');
+            }
+        }
+        parent::add($autodate, $null_values);
+    }
+
+    public function update($null_values = false)
+    {
+        $options = $this->transform_options();
+        if ($options != false)
+            $this->options = $options;
+        parent::update($null_values);
+    }
+
     public static function duplicate()
     {
-        
+        $dc = new DC(Tools::getValue(self::$definition['primary']));
+        if (!is_object($dc))
+            return;
+        unset($dc->id);
+        $dc->active = 0;
+        $dc->save();
+    }
+
+    private function transform_options()
+    {
+        if (!Tools::getIsset('submitUpdate' . self::$definition['table']) && !Tools::getIsset('submitAdd' . self::$definition['table']))
+            return false;
+        $parms = array();
+        foreach (self::getOptionFields() as $option)
+            $parms[$option] = Tools::getValue($option);
+        return Tools::jsonEncode($parms);
+    }
+
+    public static function getOptionFields()
+    {
+        return array('element', 'insert', 'backgroundColor', 'borderColor', 'borderWidth', 'style', 'borderStyle');
     }
 }

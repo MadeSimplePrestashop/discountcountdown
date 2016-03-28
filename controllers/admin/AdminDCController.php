@@ -28,20 +28,21 @@ class AdminDCController extends ModuleAdminController
         $this->addRowAction('delete');
 
         Shop::addTableAssociation($this->table, array('type' => 'shop'));
+        $this->bulk_actions = array(
+            'delete' => array(
+                'text' => $this->l('Delete selected'),
+                'confirm' => $this->l('Delete selected items?')
+            )
+        );
 
         parent::__construct();
     }
 
     public function initContent()
     {
-
-//        if (Tools::getIsset('duplicate' . $this->table))
-//            DC::duplicate();
-//        elseif (Tools::getIsset('view' . $this->table))
-//            if (Tools::getIsset(DC::$definition['primary']))
-//                Tools::redirectAdmin('index.php?controller=AdminSlides&' . DC::$definition['primary'] . '=' . (int) Tools::getValue(DC::$definition['primary']) . '&token=' . Tools::getAdminTokenLite('AdminSlides'));
-//            else
-//                $this->errors[] = Tools::displayError('Can\'t identify slider. Please repeat your choice.');
+        if (Tools::getIsset('duplicate' . $this->table)) {
+            DC::duplicate();
+        }
         parent::initContent();
     }
 
@@ -53,7 +54,9 @@ class AdminDCController extends ModuleAdminController
 //        elseif (Tools::isSubmit('submitAdd' . $this->table))
 //            if (Tools::getIsset('submitPreview'))
 //                Tools::redirectAdmin(Context::getContext()->link->getAdminLink('AdminSlides') . '&' . DC::$definition['primary'] . '=' . $this->object->id . '#preview');
-        if (Tools::getIsset('submitStay')) {
+        if (Tools::isSubmit('submitAdd' . $this->table)) {
+            Tools::redirectAdmin(Context::getContext()->link->getAdminLink('AdminDC'));
+        } elseif (Tools::getIsset('submitStay')) {
             Tools::redirectAdmin(Context::getContext()->link->getAdminLink('AdminDC') . '&' . DC::$definition['primary'] . '=' . $this->object->id . '&update' . $this->table);
         }
 //            else
@@ -68,6 +71,11 @@ class AdminDCController extends ModuleAdminController
             return;
         }
 
+        if (is_object($obj)) {
+            $options = Tools::jsonDecode($obj->options);
+        } else {
+            $options = '';
+        }
         if ($obj->id) {
             $activation_html = '<p><input type="text" readonly="readonly" value="' . $this->context->shop->getBaseUrl() . '?dc=' . urlencode($this->module->cipherTool->encrypt($obj->id)) . '" /></p>'
                 . '<p>' . $this->l('Use this link for your customers in your campaign') . '</p>';
@@ -75,6 +83,17 @@ class AdminDCController extends ModuleAdminController
             $activation_html = '<p>' . $this->l('Please save before we\re able to generate link') . '</p>';
         }
 
+        //disable prestashop default groups 
+        $groups = Group::getGroups($this->context->language->id);
+        if ($groups) {
+            foreach ($groups as $key => $group) {
+                if (in_array($group['id_group'], array(Configuration::get('PS_UNIDENTIFIED_GROUP'),
+                        Configuration::get('PS_GUEST_GROUP'),
+                        Configuration::get('PS_CUSTOMER_GROUP')))) {
+                    unset($groups[$key]);
+                }
+            }
+        }
         $this->fields_form = array(
             'legend' => array(
                 'tinymce' => true,
@@ -105,10 +124,10 @@ class AdminDCController extends ModuleAdminController
                     'tab' => 'discount',
                     'type' => 'select',
                     'label' => $this->l('Custumer group'),
-                    'desc' => $this->l('Create customer group with your discounts in Customers > Groups tab'),
+                    'desc' => $this->l('Create customer in Customers > Groups tab'),
                     'name' => 'id_group',
                     'options' => array(
-                        'query' => Group::getGroups($this->context->language->id),
+                        'query' => $groups,
                         'id' => 'id_group',
                         'name' => 'name'
                     )
@@ -244,14 +263,13 @@ class AdminDCController extends ModuleAdminController
             'name' => 'position',
             'label' => $this->l('Website position picker')
         );
-        $this->fields_value['element'] = '<input value="' . $obj->element . '" name="element" id="element" type="text">';
+        $this->fields_value['element'] = '<input value="' . (isset($options->element) ? $options->element : '' ) . '" name="element" id="element" type="text">';
         $this->fields_form['input'][] = array(
             'class' => 'element',
-            'required' => true,
             'tab' => 'countdown',
             'type' => 'free',
             'name' => 'element',
-            'desc' => $this->l('If leave empty, slider will not displayed'),
+            'desc' => $this->l('If leave empty, countdown will not displayed'),
             'label' => $this->l('Selected element'),
         );
 
@@ -263,10 +281,12 @@ class AdminDCController extends ModuleAdminController
             'required' => true,
             'values' => array(
                 array(
+                    'id' => 'after',
                     'value' => 'after',
                     'label' => $this->l('After selected element')
                 ),
                 array(
+                    'id' => 'before',
                     'value' => 'before',
                     'label' => $this->l('Before selected element')
                 ),
@@ -275,12 +295,106 @@ class AdminDCController extends ModuleAdminController
                     'label' => $this->l('Prepend to selected element')
                 ),
                 array(
+                    'id' => 'append',
                     'value' => 'append',
                     'label' => $this->l('Append to selected element')
+                ),
+                array(
+                    'id' => 'replace',
+                    'value' => 'replace',
+                    'label' => $this->l('Replace selected element')
                 )
             ),
-            'default_value' => $options->insert
+            'default_value' => isset($options->insert) ? $options->insert : 'prepend',
         );
+
+
+        $this->fields_form['input'][] = array(
+            'tab' => 'countdown',
+            'type' => 'color',
+            'label' => $this->l('Background color'),
+            'name' => 'backgroundColor',
+            'default_value' => isset($options->backgroundColor) ? $options->backgroundColor : '#f6f6f6',
+        );
+        $this->fields_form['input'][] = array(
+            'tab' => 'countdown',
+            'type' => 'text',
+            'label' => 'Border width',
+            'name' => 'borderWidth',
+            'class' => 'input fixed-width-sm',
+            'default_value' => isset($options->borderWidth) ? $options->borderWidth : '3px',
+        );
+
+        $this->fields_form['input'][] = array(
+            'tab' => 'countdown',
+            'type' => 'select',
+            'label' => $this->l('Border Style'),
+            'name' => 'borderStyle',
+            'options' => array(
+                'query' => array(
+                    array(
+                        'value' => 'none',
+                        'label' => $this->l('None')
+                    ),
+                    array(
+                        'value' => 'hidden',
+                        'label' => $this->l('Hidden')
+                    ),
+                    array(
+                        'value' => 'dotted',
+                        'label' => $this->l('Dotted')
+                    ),
+                    array(
+                        'value' => 'solid',
+                        'label' => $this->l('Solid')
+                    ),
+                    array(
+                        'value' => 'double',
+                        'label' => $this->l('double')
+                    ),
+                    array(
+                        'value' => 'groove',
+                        'label' => $this->l('Groove')
+                    ),
+                    array(
+                        'value' => 'ridge',
+                        'label' => $this->l('Ridge')
+                    ),
+                    array(
+                        'value' => 'inset',
+                        'label' => $this->l('Inset')
+                    ),
+                    array(
+                        'value' => 'outset',
+                        'label' => $this->l('Outset')
+                    )
+                ),
+                'id' => 'value',
+                'name' => 'label'
+            ),
+            'default_value' => isset($options->borderStyle) ? $options->borderStyle : 'solid',
+        );
+
+
+        $this->fields_form['input'][] = array(
+            'tab' => 'countdown',
+            'type' => 'color',
+            'label' => $this->l('Border color'),
+            'name' => 'borderColor',
+            'default_value' => isset($options->borderColor) ? $options->borderColor : '#e9e9e9',
+        );
+
+        $this->fields_form['input'][] = array(
+            'tab' => 'countdown',
+            'type' => 'text',
+            'label' => 'Inline CSS style',
+            'name' => 'style',
+            'desc' => $this->l('For advanced user'),
+            'default_value' => isset($options->style) ? $options->style : 'text-align: center;  margin:0px 0px 0px 0px; padding: 10px 10px 20px 10px;',
+        );
+
+
+
 
         $this->page_header_toolbar_btn['save'] = array(
             'href' => 'javascript:$("#' . $this->table . '_form button:submit").click();',
