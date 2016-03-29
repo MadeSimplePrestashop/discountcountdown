@@ -49,18 +49,15 @@ class AdminDCController extends ModuleAdminController
     public function postProcess()
     {
         parent::postProcess();
-//        if (Tools::getIsset('delete' . $this->table))
-//            Tools::redirectAdmin(Context::getContext()->link->getAdminLink('AdminDC'));
-//        elseif (Tools::isSubmit('submitAdd' . $this->table))
-//            if (Tools::getIsset('submitPreview'))
-//                Tools::redirectAdmin(Context::getContext()->link->getAdminLink('AdminSlides') . '&' . DC::$definition['primary'] . '=' . $this->object->id . '#preview');
-        if (Tools::isSubmit('submitAdd' . $this->table)) {
+        if (Tools::getIsset('delete' . $this->table)) {
+            Tools::redirectAdmin(Context::getContext()->link->getAdminLink('AdminDC'));
+        } elseif (Tools::getIsset('delete' . $this->table)) {
             Tools::redirectAdmin(Context::getContext()->link->getAdminLink('AdminDC'));
         } elseif (Tools::getIsset('submitStay')) {
             Tools::redirectAdmin(Context::getContext()->link->getAdminLink('AdminDC') . '&' . DC::$definition['primary'] . '=' . $this->object->id . '&update' . $this->table);
+        } elseif (Tools::isSubmit('submitAdd' . $this->table)) {
+            Tools::redirectAdmin(Context::getContext()->link->getAdminLink('AdminDC'));
         }
-//            else
-//                Tools::redirectAdmin(Context::getContext()->link->getAdminLink('AdminDC'));
     }
 
     public function renderForm()
@@ -70,30 +67,19 @@ class AdminDCController extends ModuleAdminController
         if (!$obj) {
             return;
         }
-
         if (is_object($obj)) {
             $options = Tools::jsonDecode($obj->options);
         } else {
             $options = '';
         }
         if ($obj->id) {
+            $group = new Group($obj->id_group);
             $activation_html = '<p><input type="text" readonly="readonly" value="' . $this->context->shop->getBaseUrl() . '?dc=' . urlencode($this->module->cipherTool->encrypt($obj->id)) . '" /></p>'
                 . '<p>' . $this->l('Use this link for your customers in your campaign') . '</p>';
         } else {
             $activation_html = '<p>' . $this->l('Please save before we\re able to generate link') . '</p>';
         }
 
-        //disable prestashop default groups 
-        $groups = Group::getGroups($this->context->language->id);
-        if ($groups) {
-            foreach ($groups as $key => $group) {
-                if (in_array($group['id_group'], array(Configuration::get('PS_UNIDENTIFIED_GROUP'),
-                        Configuration::get('PS_GUEST_GROUP'),
-                        Configuration::get('PS_CUSTOMER_GROUP')))) {
-                    unset($groups[$key]);
-                }
-            }
-        }
         $this->fields_form = array(
             'legend' => array(
                 'tinymce' => true,
@@ -107,6 +93,25 @@ class AdminDCController extends ModuleAdminController
             ),
             'input' => array(
                 array(
+                    'tab' => 'discount',
+                    'type' => 'switch',
+                    'label' => $this->l('Active'),
+                    'name' => 'active',
+                    'values' => array(
+                        array(
+                            'id' => 'active_on',
+                            'value' => 1,
+                            'label' => $this->l('Enabled')
+                        ),
+                        array(
+                            'id' => 'active_off',
+                            'value' => 0,
+                            'label' => $this->l('Disabled')
+                        )
+                    ),
+                    'default_value' => isset($obj->active) ? $obj->active : 1
+                ),
+                array(
                     'type' => 'text',
                     'label' => $this->l('Expiration after'),
                     'name' => 'expiration',
@@ -119,18 +124,6 @@ class AdminDCController extends ModuleAdminController
                     'type' => 'hidden',
                     'name' => DC::$definition['primary'],
                     'tab' => 'options'
-                ),
-                array(
-                    'tab' => 'discount',
-                    'type' => 'select',
-                    'label' => $this->l('Custumer group'),
-                    'desc' => $this->l('Create customer in Customers > Groups tab'),
-                    'name' => 'id_group',
-                    'options' => array(
-                        'query' => $groups,
-                        'id' => 'id_group',
-                        'name' => 'name'
-                    )
                 ),
                 array(
                     'tab' => 'countdown',
@@ -179,6 +172,13 @@ class AdminDCController extends ModuleAdminController
                     'name' => 'caption',
                     'desc' => $this->l('For example: Your discount 10% expire until')
                 ),
+                array(
+                    'tab' => 'countdown',
+                    'type' => 'text',
+                    'label' => $this->l('Countdown link'),
+                    'name' => 'link',
+                    'default_value' => isset($options->link) ? $options->link : '',
+                ),
 //                array(
 //                    'tab' => 'discount',
 //                    'type' => 'select',
@@ -207,25 +207,6 @@ class AdminDCController extends ModuleAdminController
                     'desc' => $this->l('Leave empty, If discount never expire'),
                 ),
                 array(
-                    'tab' => 'discount',
-                    'type' => 'switch',
-                    'label' => $this->l('Active'),
-                    'name' => 'active',
-                    'values' => array(
-                        array(
-                            'id' => 'active_on',
-                            'value' => 1,
-                            'label' => $this->l('Enabled')
-                        ),
-                        array(
-                            'id' => 'active_off',
-                            'value' => 0,
-                            'label' => $this->l('Disabled')
-                        )
-                    ),
-                    'default_value' => isset($obj->active) ? $obj->active : 1
-                ),
-                array(
                     'tab' => 'activation',
                     'type' => 'html',
                     'name' => 'activation_html',
@@ -238,16 +219,6 @@ class AdminDCController extends ModuleAdminController
                 'name' => 'submit',
             )
         );
-
-        if (Shop::isFeatureActive()) {
-            $this->fields_form['input'][] = array(
-                'tab' => 'display',
-                'type' => 'shop',
-                'label' => $this->l('Shop association:'),
-                'name' => 'checkBoxShopAsso',
-                'tab' => 'discount'
-            );
-        }
 
         $positions = array();
         $href = $this->context->shop->getBaseUrl() . '?dc_live_edit_token=' . $this->module->getLiveEditToken() . '&id_employee=' . $this->context->employee->id;
@@ -291,6 +262,7 @@ class AdminDCController extends ModuleAdminController
                     'label' => $this->l('Before selected element')
                 ),
                 array(
+                    'id' => 'prepend',
                     'value' => 'prepend',
                     'label' => $this->l('Prepend to selected element')
                 ),
@@ -393,7 +365,57 @@ class AdminDCController extends ModuleAdminController
             'default_value' => isset($options->style) ? $options->style : 'text-align: center;  margin:0px 0px 0px 0px; padding: 10px 10px 20px 10px;',
         );
 
+        $globalpreduction = isset($group->reduction) ? $group->reduction : number_format(10, 2);
+        $this->fields_form['input'][] = array(
+            'type' => 'text',
+            'label' => $this->l('Global discount'),
+            'name' => 'discount',
+            'id' => 'globaldiscount',
+            'suffix' => '%',
+            'class' => 'input fixed-width-sm',
+            'tab' => 'discount',
+            'default_value' => $globalpreduction
+        );
 
+        $categories = Category::getAllCategoriesName(null, Context::getContext()->language->id);
+        if ($obj->id) {
+            $groupreductions = GroupReductionCore::getGroupReductions($obj->id_group, Context::getContext()->language->id);
+        }
+
+        foreach ($categories as $category) {
+            if (Category::getTopCategory()->id == $category['id_category']) {
+                continue;
+            }
+            $default_value = '';
+            if (isset($groupreductions)) {
+                foreach ($groupreductions as $groupreduction) {
+                    if ($category['id_category'] == $groupreduction['id_category']) {
+                        $default_value = $groupreduction['reduction'];
+                    }
+                }
+            }
+            $this->fields_form['input'][] = array(
+                'type' => 'text',
+                'label' => $category['name'],
+                'name' => 'category[' . $category ['id_category'] . ']',
+                'suffix' => '%',
+                'class' => 'input fixed-width-sm discountcategory',
+                'tab' => 'discount',
+                'placeholder' => $globalpreduction,
+                'default_value' => (empty($default_value)) ? '' : number_format(( $default_value * 100), 2)
+            );
+        }
+
+
+        if (Shop::isFeatureActive()) {
+            $this->fields_form['input'][] = array(
+                'tab' => 'display',
+                'type' => 'shop',
+                'label' => $this->l('Shop association:'),
+                'name' => 'checkBoxShopAsso',
+                'tab' => 'discount'
+            );
+        }
 
 
         $this->page_header_toolbar_btn['save'] = array(
@@ -414,7 +436,9 @@ class AdminDCController extends ModuleAdminController
         );
 
 
-        return parent::renderForm();
+        return parent::
+
+            renderForm();
     }
 
     public function renderList()
@@ -429,7 +453,7 @@ class AdminDCController extends ModuleAdminController
                 'search' => false,
             ),
             'id_group' => array(
-                'title' => $this->l('Customer Group'),
+                'title' => $this->l('Discount'),
                 'type' => 'text',
                 'orderby' => false,
                 'search' => false,
@@ -465,7 +489,6 @@ class AdminDCController extends ModuleAdminController
     public function getCustomerGroup($echo)
     {
         $group = new Group($echo, $this->context->language->id);
-
-        return $group->name;
+        return $group->reduction . '%';
     }
 }

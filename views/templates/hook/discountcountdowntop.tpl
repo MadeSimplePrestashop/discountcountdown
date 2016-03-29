@@ -1,6 +1,6 @@
 {if isset($dc) && $dc && !empty(trim($dc.options->element))}    
     {if isset($dc_message)}
-        <script type="text/javascript">alert('{$dc_message}')</script>
+        <script type="text/javascript">alert('{$dc_message|escape:'html':'UTF-8'}')</script>
     {/if}
     {if $dc.countdown_format==1}
         {$date_format="<span>%D<em>{l s='days' mod='discountcountdown'}</em></span> <span>%H<em>{l s='hours' mod='discountcountdown'}</em></span> <span>%M<em>{l s='minutes' mod='discountcountdown'}</em></span> <span>%S<em>{l s='seconds' mod='discountcountdown'}</em></span>"}
@@ -8,7 +8,13 @@
         {$date_format="<span>%H<em>{l s='hours' mod='discountcountdown'}</em></span> <span>%M<em>{l s='minutes' mod='discountcountdown'}</em></span> <span>%S<em>{l s='seconds' mod='discountcountdown'}</em></span>"}
     {/if}
     <div class="dc-top" id="dc-top" style="{if $dc.options->borderWidth}border-width:{$dc.options->borderWidth|escape:'html':'UTF-8'};{/if} {if $dc.options->borderColor}border-color:{$dc.options->borderColor|escape:'html':'UTF-8'};{/if}  {if $dc.options->borderStyle}border-style:{$dc.options->borderStyle|escape:'html':'UTF-8'};{/if} {if $dc.options->backgroundColor}background-color:{$dc.options->backgroundColor|escape:'html':'UTF-8'};{/if} {$dc.options->style|escape:'html':'UTF-8'}">
-        <strong>{$dc.caption|escape:'htmlall':'UTF-8'}</strong><span data-date-countdown="{$dc_activated|date_format:"Y-m-d H:i:s"}" data-date-format="{$date_format|escape:'UTF-8'}" class="clock"></span>
+        {if $dc.options->link}
+            <a href="{$dc.options->link|escape:'html':'UTF-8'}">
+         {/if}
+            <strong>{$dc.caption|escape:'htmlall':'UTF-8'}</strong><span data-date-countdown="{$dc_activated|date_format:"Y-m-d H:i:s"}" data-date-format="{$date_format|escape:'UTF-8'}" class="clock"></span>
+         {if $dc.options->link}
+            </a>
+        {/if}
     </div>
     {if $dc.options->element}
         <script type="text/javascript">

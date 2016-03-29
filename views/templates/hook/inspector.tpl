@@ -5,7 +5,7 @@
     })
 </script>
 <div id="inspector-note" class="ignore">
-    {l s='Note: Use click  for select element, doubleclick for location to link' mod='sliderseverywhere'}
+    {l s='Note: Use click  for select element, doubleclick for location to link' mod='discountcountdown'}
 </div>
 <div id="inspector-tools" class="container ignore" style="display: none">
     <form action="">

@@ -17,7 +17,7 @@ class DC extends ObjectModel
     public $date_to;
     public $countdown_format;
     public $active;
-    //public $availability;
+//public $availability;
     public $caption;
     public $display_header;
     public $options;
@@ -79,25 +79,85 @@ class DC extends ObjectModel
         if ($options != false)
             $this->options = $options;
 
+        $this->id_group = 0;
+        parent::add($autodate, $null_values);
+//create group
+        $group = new Group();
+        $lang_array = array();
+        foreach (Context::getContext()->controller->getLanguages() as $language) {
+            $lang_array[(int) $language['id_lang']] = self::$definition['table'] . $this->id;
+        }
+        $group->name = $lang_array;
+        $group->reduction = (int) Tools::getValue('discount');
+        $group->price_display_method = 0;
+        $group->show_prices = 1;
+        $group->save();
+        if ($group->id) {
+            $this->id_group = $group->id;
+            $this->update();
+            self::updateRestrictions($group->id);
+        }
+    }
 
-        if ($this->id_group) {
-            Db::getInstance()->execute('DELETE FROM `' . _DB_PREFIX_ . 'category_group` WHERE `id_group` = ' . (int) $this->id_group);
-            $categories = Category::getAllCategoriesName(null, Context::getContext()->language->id);
-            foreach ($categories as $category) {
-                Db::getInstance()->execute('INSERT INTO `' . _DB_PREFIX_ . 'category_group` 
-                    (`id_category`, `id_group`)
-		VALUES (' . (int) $category['id_category'] . ', ' . (int) $this->id_group . ')');
+    private static function setGroupReduction($id_group)
+    {
+        foreach (Tools::getValue('category') as $id_category => $c) {
+            $id_category_group = Db::getInstance(_PS_USE_SQL_SLAVE_)->getValue('
+		SELECT `id_category`
+		FROM `' . _DB_PREFIX_ . 'category_group`
+		WHERE `id_group` = ' . (int) $id_group . ' AND `id_category` = ' . (int) $id_category);
+            if (!$id_category_group) {
+                Db::getInstance()->insert('category_group', array('id_category' => (int) $id_category, 'id_group' => (int) $id_group));
+            }
+
+            $empty_category = (!empty($c) || Tools::strlen(trim($c))) != 0 ? false : true;
+            $id_group_reduction = Db::getInstance(_PS_USE_SQL_SLAVE_)->getValue('
+		SELECT `id_group_reduction`
+		FROM `' . _DB_PREFIX_ . 'group_reduction`
+		WHERE `id_group` = ' . (int) $id_group . ' AND `id_category` = ' . (int) $id_category);
+            if ($id_group_reduction) {
+                $groupreduction = new GroupReductionCore($id_group_reduction);
+                if ($empty_category == false) {
+                    $groupreduction->reduction = (float) ($c / 100);
+                    $groupreduction->update();
+                } else {
+                    $groupreduction->delete();
+                }
+            } else {
+                if ($empty_category == false) {
+                    $groupreduction = new GroupReductionCore();
+                    $groupreduction->id_group = $id_group;
+                    $groupreduction->id_category = $id_category;
+                    $groupreduction->reduction = (float) ($c / 100);
+                    $groupreduction->save();
+                }
             }
         }
-        parent::add($autodate, $null_values);
     }
 
     public function update($null_values = false)
     {
+
         $options = $this->transform_options();
-        if ($options != false)
+        if ($options != false) {
             $this->options = $options;
+        }
         parent::update($null_values);
+
+        self::setGroupReduction($this->id_group);
+
+        $group = new Group($this->id_group);
+        $group->reduction = (int) Tools::getValue('discount');
+        $group->update();
+    }
+
+    public function delete()
+    {
+//update group
+        $group = new Group($this->id_group);
+        $group->delete();
+
+        parent::delete();
     }
 
     public static function duplicate()
@@ -122,6 +182,20 @@ class DC extends ObjectModel
 
     public static function getOptionFields()
     {
-        return array('element', 'insert', 'backgroundColor', 'borderColor', 'borderWidth', 'style', 'borderStyle');
+        return array('element', 'insert', 'backgroundColor', 'borderColor', 'borderWidth', 'style', 'borderStyle', 'link');
+    }
+
+    protected static function updateRestrictions($id_group)
+    {
+        Group::truncateModulesRestrictions((int) $id_group);
+        $shops = Shop::getShops(true, null, true);
+        $auth_modules = array();
+        $modules = Module::getModulesInstalled();
+        foreach ($modules as $module) {
+            $auth_modules[] = $module['id_module'];
+        }
+        if (is_array($auth_modules)) {
+            return Group::addModulesRestrictions($id_group, $auth_modules, $shops);
+        }
     }
 }

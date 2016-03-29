@@ -124,7 +124,8 @@ class Discountcountdown extends Module
             }
 
             if (isset($id_discount_from_cookie) && isset($id_discount_from_url) && $id_discount_from_cookie != $id_discount_from_url) {
-                // if different, set new, or TODO prioritize
+                // remove rom cookie
+                $id_discount_from_cookie = '';
             }
             if (!$discountdb) {
                 return;
@@ -140,8 +141,8 @@ class Discountcountdown extends Module
             if ($activated + ($discountdb['expiration'] * 3600) < time()) {
                 return;
             }
-            if(isset($id_discount_from_url)){
-                $this->context->smarty->assign('dc_message',$this->l('Your discount is activated.'));
+            if (isset($id_discount_from_url)) {
+                $this->context->smarty->assign('dc_message', $this->l('Your discount is activated.'));
             }
             $this->context->smarty->assign(array('dc' => $discountdb));
             $this->context->smarty->assign(array('dc_activated' => $activated + ($discountdb['expiration'] * 3600)));
@@ -162,9 +163,8 @@ class Discountcountdown extends Module
 
     public function hookBackOfficeHeader()
     {
-        if (Tools::getValue('module_name') == $this->name) {
-//$this->context->controller->addJS($this->_path . 'views/js/back.js');
-//$this->context->controller->addCSS($this->_path . 'views/css/back.css');
+        if (in_array(Dispatcher::getInstance()->getController(), array('AdminDC'))) {
+            $this->context->controller->addJS($this->_path . '/views/js/admin.js');
         }
     }
 
@@ -193,7 +193,7 @@ class Discountcountdown extends Module
     {
         $this->addMedia();
         $discountdb = Cache::retrieve(__CLASS__ . 'c');
-        if ($discountdb && $discountdb['display_product']) {
+        if ($discountdb && isset($discountdb['display_product']) && $discountdb['display_product']) {
             return $this->display(__FILE__, 'discountcountdownproduct.tpl');
         }
     }
