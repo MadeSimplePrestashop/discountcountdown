@@ -28,7 +28,7 @@ $sql = array();
 $sql[] = 'CREATE TABLE IF NOT EXISTS `' . _DB_PREFIX_ . 'discountcountdown` (
     `id_discountcountdown` int(11) NOT NULL AUTO_INCREMENT,
     `id_group` int(11) NOT NULL,
-    `expiration` int(3) NOT NULL,
+    `expiration` float NOT NULL,
     `countdown_format` int(3) NOT NULL,
     `date_to` DATETIME NULL,
     `availability` int(3) NOT NULL,
@@ -43,6 +43,7 @@ CREATE TABLE IF NOT EXISTS `' . _DB_PREFIX_ . 'discountcountdown_lang` (
   `id_discountcountdown` int(11),
   `id_lang` int(3) NOT NULL,
   `caption` varchar(255),
+  `success_message` varchar(255),
   PRIMARY KEY (`id_discountcountdown`,id_lang)
 ) ENGINE = ' . _MYSQL_ENGINE_ . '  ';
 

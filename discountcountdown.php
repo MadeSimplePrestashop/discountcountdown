@@ -27,6 +27,7 @@ class Discountcountdown extends Module
         $this->author = 'kuzmany.biz/prestashop';
         $this->need_instance = 0;
         $this->bootstrap = true;
+        $this->module_key = '44258249c62bc824d6de016c55d5265d';
 
         parent::__construct();
 
@@ -142,7 +143,7 @@ class Discountcountdown extends Module
                 return;
             }
             if (isset($id_discount_from_url)) {
-                $this->context->smarty->assign('dc_message', $this->l('Your discount is activated.'));
+                $this->context->smarty->assign('dc_message', 1);
             }
             $this->context->smarty->assign(array('dc' => $discountdb));
             $this->context->smarty->assign(array('dc_activated' => $activated + ($discountdb['expiration'] * 3600)));

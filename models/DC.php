@@ -20,6 +20,7 @@ class DC extends ObjectModel
 //public $availability;
     public $caption;
     public $display_header;
+    public $success_message;
     public $options;
 
     public function __construct($id = null, $id_lang = null, $id_shop = null)
@@ -44,7 +45,7 @@ class DC extends ObjectModel
         'multilang' => true,
         'fields' => array(
             'id_group' => array('type' => self::TYPE_INT, 'required' => true),
-            'expiration' => array('type' => self::TYPE_INT, 'required' => true),
+            'expiration' => array('type' => self::TYPE_FLOAT, 'required' => true),
             'countdown_format' => array('type' => self::TYPE_INT, 'required' => true),
             //'availability' => array('type' => self::TYPE_INT, 'required' => true),
             'active' => array('type' => self::TYPE_BOOL, 'required' => true),
@@ -52,6 +53,7 @@ class DC extends ObjectModel
             'options' => array('type' => self::TYPE_STRING, 'validate' => 'isString'),
             'date_to' => array('type' => self::TYPE_DATE),
             'caption' => array('type' => self::TYPE_HTML, 'lang' => true),
+            'success_message' => array('type' => self::TYPE_STRING, 'lang' => true),
         )
     );
 

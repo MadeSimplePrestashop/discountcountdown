@@ -1,13 +1,13 @@
-{if isset($dc) && $dc && !empty(trim($dc.options->element))}    
+{if isset($dc) && $dc && !empty($dc.options->element)}    
     {if isset($dc_message)}
-        <script type="text/javascript">alert('{$dc_message|escape:'html':'UTF-8'}')</script>
+        <script type="text/javascript">alert('{$dc.success_message|escape:'html':'UTF-8'}');</script>
     {/if}
     {if $dc.countdown_format==1}
         {$date_format="<span>%D<em>{l s='days' mod='discountcountdown'}</em></span> <span>%H<em>{l s='hours' mod='discountcountdown'}</em></span> <span>%M<em>{l s='minutes' mod='discountcountdown'}</em></span> <span>%S<em>{l s='seconds' mod='discountcountdown'}</em></span>"}
     {else}
         {$date_format="<span>%H<em>{l s='hours' mod='discountcountdown'}</em></span> <span>%M<em>{l s='minutes' mod='discountcountdown'}</em></span> <span>%S<em>{l s='seconds' mod='discountcountdown'}</em></span>"}
     {/if}
-    <div class="dc-top" id="dc-top" style="{if $dc.options->borderWidth}border-width:{$dc.options->borderWidth|escape:'html':'UTF-8'};{/if} {if $dc.options->borderColor}border-color:{$dc.options->borderColor|escape:'html':'UTF-8'};{/if}  {if $dc.options->borderStyle}border-style:{$dc.options->borderStyle|escape:'html':'UTF-8'};{/if} {if $dc.options->backgroundColor}background-color:{$dc.options->backgroundColor|escape:'html':'UTF-8'};{/if} {$dc.options->style|escape:'html':'UTF-8'}">
+    <div class="dc-top" id="dc-top" style="display:none;{if $dc.options->borderWidth}border-width:{$dc.options->borderWidth|escape:'html':'UTF-8'};{/if} {if $dc.options->borderColor}border-color:{$dc.options->borderColor|escape:'html':'UTF-8'};{/if}  {if $dc.options->borderStyle}border-style:{$dc.options->borderStyle|escape:'html':'UTF-8'};{/if} {if $dc.options->backgroundColor}background-color:{$dc.options->backgroundColor|escape:'html':'UTF-8'};{/if} {$dc.options->style|escape:'html':'UTF-8'}">
         {if $dc.options->link}
             <a href="{$dc.options->link|escape:'html':'UTF-8'}">
          {/if}
@@ -30,7 +30,8 @@
             {elseif $dc.options->insert == 'replace'}
                 $('{$dc.options->element|escape:'html':'UTF-8'}').replaceWith($('#dc-top'));
             {/if}
-            })
+                $('#dc-top').show();
+            } );
         </script>
     {/if}
 {/if}

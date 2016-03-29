@@ -128,7 +128,7 @@ class AdminDCController extends ModuleAdminController
                 array(
                     'tab' => 'countdown',
                     'type' => 'switch',
-                    'label' => $this->l('Display on all pages'),
+                    'label' => $this->l('Display'),
                     'name' => 'display_header',
                     'values' => array(
                         array(
@@ -205,6 +205,14 @@ class AdminDCController extends ModuleAdminController
                     'label' => $this->l('Active until'),
                     'name' => 'date_to',
                     'desc' => $this->l('Leave empty, If discount never expire'),
+                ),
+                array(
+                    'tab' => 'discount',
+                    'type' => 'text',
+                    'label' => $this->l('Success activation messsage'),
+                    'lang' => true,
+                    'name' => 'success_message',
+                    'desc' => $this->l('For example: Discount will be activated')
                 ),
                 array(
                     'tab' => 'activation',
