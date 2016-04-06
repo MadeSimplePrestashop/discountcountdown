@@ -387,7 +387,7 @@ class AdminDCController extends ModuleAdminController
             'default_value' => $globalpreduction
         );
 
-        $categories = Category::getAllCategoriesName(null, Context::getContext()->language->id);
+        $categories = Category::getSimpleCategories(Context::getContext()->language->id);
         if ($obj->id) {
             $groupreductions = GroupReductionCore::getGroupReductions($obj->id_group, Context::getContext()->language->id);
         }
