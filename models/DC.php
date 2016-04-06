@@ -103,13 +103,15 @@ class DC extends ObjectModel
 
     private static function setGroupReduction($id_group)
     {
-        foreach (Tools::getValue('category') as $id_category => $c) {
-            $id_category_group = Db::getInstance(_PS_USE_SQL_SLAVE_)->getValue('
+        if (Tools::getIsset('category')) {
+            foreach (Tools::getValue('category') as $id_category => $c) {
+                $id_category_group = Db::getInstance(_PS_USE_SQL_SLAVE_)->getValue('
 		SELECT `id_category`
 		FROM `' . _DB_PREFIX_ . 'category_group`
 		WHERE `id_group` = ' . (int) $id_group . ' AND `id_category` = ' . (int) $id_category);
-            if (!$id_category_group) {
-                Db::getInstance()->insert('category_group', array('id_category' => (int) $id_category, 'id_group' => (int) $id_group));
+                if (!$id_category_group) {
+                    Db::getInstance()->insert('category_group', array('id_category' => (int) $id_category, 'id_group' => (int) $id_group));
+                }
             }
 
             $empty_category = (!empty($c) || Tools::strlen(trim($c))) != 0 ? false : true;

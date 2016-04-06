@@ -57,6 +57,8 @@ class AdminDCController extends ModuleAdminController
             Tools::redirectAdmin(Context::getContext()->link->getAdminLink('AdminDC') . '&' . DC::$definition['primary'] . '=' . $this->object->id . '&update' . $this->table);
         } elseif (Tools::isSubmit('submitAdd' . $this->table)) {
             Tools::redirectAdmin(Context::getContext()->link->getAdminLink('AdminDC'));
+        } elseif (Tools::getIsset('status' . $this->table)) {
+            Tools::redirectAdmin($this->context->link->getAdminLink('AdminDC'));
         }
     }
 
