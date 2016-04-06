@@ -131,6 +131,8 @@ class Discountcountdown extends Module
             if (!$discountdb) {
                 return;
             }
+            
+            
 
             if (!$id_discount_from_cookie && $id_discount_from_url) {
                 $id_discount = $discountdb['id_discountcountdown'];
