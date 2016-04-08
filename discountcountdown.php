@@ -11,6 +11,7 @@ if (!defined('_PS_VERSION_')) {
     exit;
 }
 include_once dirname(__FILE__) . '/models/DC.php';
+include_once dirname(__FILE__) . '/models/DCLogs.php';
 
 class Discountcountdown extends Module
 {
@@ -44,7 +45,14 @@ class Discountcountdown extends Module
 
     public function install()
     {
-
+        if (!parent::install() ||
+            !$this->registerHook('header') ||
+            !$this->registerHook('displayFooter') ||
+            !$this->registerHook('backOfficeHeader') ||
+            !$this->registerHook('productActions') ||
+            !$this->registerHook('displayTop')) {
+            return false;
+        }
         include_once(dirname(__FILE__) . '/sql/install.php');
 
         $this->context->controller->getLanguages();
@@ -54,12 +62,7 @@ class Discountcountdown extends Module
             $lang_array[(int) $language['id_lang']] = $this->displayName;
         }
         $this->installAdminTab($lang_array, 'AdminDC', $id_parent);
-        return parent::install() &&
-            $this->registerHook('header') &&
-            $this->registerHook('displayFooter') &&
-            $this->registerHook('backOfficeHeader') &&
-            $this->registerHook('productActions') &&
-            $this->registerHook('displayTop');
+        return true;
     }
 
     public function uninstall()
@@ -107,7 +110,7 @@ class Discountcountdown extends Module
         if (Cache::retrieve(__CLASS__ . 'c')) {
             $discountdb = Cache::retrieve(__CLASS__ . 'c');
         } else {
-//if get param
+            //if get param
             if (Tools::getIsset('dc')) {
                 $discountdb = $this->verifyDiscountFromDb($this->cipherTool->decrypt((Tools::getValue('dc'))));
                 if ($discountdb) {
@@ -131,22 +134,31 @@ class Discountcountdown extends Module
             if (!$discountdb) {
                 return;
             }
-            
-            
 
             if (!$id_discount_from_cookie && $id_discount_from_url) {
                 $id_discount = $discountdb['id_discountcountdown'];
                 $this->cookie->__set('id_discount', $id_discount);
                 $activated = time();
                 $this->cookie->__set('activated', $activated);
+
+                $logs = new DCLogs();
+                $logs->id_guest = $this->context->cookie->id_guest;
+                $logs->id_discountcountdown = $discountdb['id_discountcountdown'];
+                $logs->date = time();
+                $logs->save();
             }
-//expiration
+            //expiration
             if ($activated + ($discountdb['expiration'] * 3600) < time()) {
+//                $exist = DCLogs::getAll(array('c.id_guest' => $this->context->cookie->id_guest, 'c.id_discountcountdown' => $discountdb['id_discountcountdown']));
+//                $exist = DCLogs::exist();
+//                $this->context->smarty->assign('dc_exist', $exist);
                 return;
             }
+
             if (isset($id_discount_from_url)) {
                 $this->context->smarty->assign('dc_message', 1);
             }
+
             $this->context->smarty->assign(array('dc' => $discountdb));
             $this->context->smarty->assign(array('dc_activated' => $activated + ($discountdb['expiration'] * 3600)));
             Cache::store(__CLASS__ . 'c', $discountdb);

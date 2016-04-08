@@ -76,7 +76,7 @@ class Group extends GroupCore
                 $groups[$id_group] = new Group($id_group);
             }
         }
-
+        Context::getContext()->smarty->assign(array('id_group'=>$id_group));
         return $groups[$id_group];
     }
 }

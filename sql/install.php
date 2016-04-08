@@ -54,6 +54,14 @@ $sql[] = ''
       PRIMARY KEY (`id_discountcountdown`, `id_shop`)
     ) ENGINE=' . _MYSQL_ENGINE_ . ' DEFAULT CHARSET=utf8;'
     . '';
+$sql[] = 'CREATE TABLE IF NOT EXISTS `' . _DB_PREFIX_ . 'discountcountdown_logs` (
+    `id_discountcountdown_logs` int(11) NOT NULL AUTO_INCREMENT,
+    `id_guest` int(11) NOT NULL,
+    `id_discountcountdown` int(11) NOT NULL,
+    `date` DATETIME NULL,
+    PRIMARY KEY  (`id_discountcountdown_logs`)
+) ENGINE=' . _MYSQL_ENGINE_ . ' DEFAULT CHARSET=utf8;';
+
 
 
 foreach ($sql as $query) {

@@ -181,26 +181,26 @@ class AdminDCController extends ModuleAdminController
                     'name' => 'link',
                     'default_value' => isset($options->link) ? $options->link : '',
                 ),
-//                array(
-//                    'tab' => 'discount',
-//                    'type' => 'select',
-//                    'label' => $this->l('Availability'),
-//                    'name' => 'availability',
-//                    'options' => array(
-//                        'query' => array(
-//                            array(
-//                                'id' => '1',
-//                                'name' => $this->l('Once the user')
-//                            ),
-//                            array(
-//                                'id' => '2',
-//                                'name' => $this->l('Multiple times for the user')
-//                            ),
-//                        ),
-//                        'id' => 'id',
-//                        'name' => 'name',
-//                    ),
-//                ),
+                array(
+                    'tab' => 'discount',
+                    'type' => 'select',
+                    'label' => $this->l('Availability'),
+                    'name' => 'availability',
+                    'options' => array(
+                        'query' => array(
+                            array(
+                                'id' => '1',
+                                'name' => $this->l('Once the user')
+                            ),
+                            array(
+                                'id' => '2',
+                                'name' => $this->l('Multiple times for the user')
+                            ),
+                        ),
+                        'id' => 'id',
+                        'name' => 'name',
+                    ),
+                ),
                 array(
                     'tab' => 'discount',
                     'type' => 'datetime',

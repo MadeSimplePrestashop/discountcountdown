@@ -17,7 +17,7 @@ class DC extends ObjectModel
     public $date_to;
     public $countdown_format;
     public $active;
-//public $availability;
+    public $availability;
     public $caption;
     public $display_header;
     public $success_message;
@@ -47,7 +47,7 @@ class DC extends ObjectModel
             'id_group' => array('type' => self::TYPE_INT, 'required' => true),
             'expiration' => array('type' => self::TYPE_FLOAT, 'required' => true),
             'countdown_format' => array('type' => self::TYPE_INT, 'required' => true),
-            //'availability' => array('type' => self::TYPE_INT, 'required' => true),
+            'availability' => array('type' => self::TYPE_INT, 'required' => true),
             'active' => array('type' => self::TYPE_BOOL, 'required' => true),
             'display_header' => array('type' => self::TYPE_BOOL),
             'options' => array('type' => self::TYPE_STRING, 'validate' => 'isString'),

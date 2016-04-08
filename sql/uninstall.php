@@ -32,6 +32,7 @@ $sql = array();
 $sql[] = 'DROP TABLE `' . _DB_PREFIX_ . 'discountcountdown`';
 $sql[] = 'DROP TABLE `' . _DB_PREFIX_ . 'discountcountdown_lang`';
 $sql[] = 'DROP TABLE `' . _DB_PREFIX_ . 'discountcountdown_shop`';
+$sql[] = 'DROP TABLE `' . _DB_PREFIX_ . 'discountcountdown_logs`';
 
 
 foreach ($sql as $query) {

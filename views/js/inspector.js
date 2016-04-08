@@ -60,6 +60,7 @@ $(document).ready(function () {
                 testPath = '',
                 parents = [],
                 parentSelectors = [],
+                parentElementSelectors = [],
                 tagName,
                 cssId,
                 cssClass,
@@ -77,7 +78,7 @@ $(document).ready(function () {
             cssId = (el.id) ? ('#' + el.id) : false;
             // Get node's CSS classes, replacing spaces with '.':
             //cssClass = (el.className) ? ('.' + el.className.replace(/\s+/g, ".")) : '';
-            cssClass = ( el.getAttribute('class') ) ? ( '.' + el.getAttribute('class').replace(/\s+/g,".") ) : '';
+            cssClass = (el.getAttribute('class')) ? ('.' + el.getAttribute('class').replace(/\s+/g, ".")) : '';
 
             // Build a unique identifier for this parent node:
             if (cssId) {
@@ -85,7 +86,7 @@ $(document).ready(function () {
                 tagSelector = tagName + cssId + cssClass;
             } else if (cssClass) {
                 // Matched by class (will be checked for multiples afterwards):
-                if(cssClass.slice(-1) == '.'){
+                if (cssClass.slice(-1) == '.') {
                     cssClass = cssClass.substring(0, cssClass.length - 1);
                 }
                 tagSelector = tagName + cssClass;
@@ -97,6 +98,7 @@ $(document).ready(function () {
 
             // Add this full tag selector to the parentSelectors array:
             parentSelectors.unshift(tagSelector)
+            parentElementSelectors.unshift(tagName)
 
             // If doing short/optimised CSS paths and this element has an ID, stop here:
             if (cssId && !fullPath)
@@ -107,30 +109,28 @@ $(document).ready(function () {
 
         // Build the CSS path string from the parent tag selectors:
         for (i = 0; i < parentSelectors.length; i++) {
-            if(i==0)
-            cssPathStr += parentSelectors[i]; // + ' ' + cssPathStr;
-        else
-            cssPathStr += ' ' + parentSelectors[i]; // + ' ' + cssPathStr;
 
             // If using ":nth-child()" selectors and this selector has no ID / isn't the html or body tag:
             if (useNthChild && !parentSelectors[i].match(/#/) && !parentSelectors[i].match(/^(html|body)$/)) {
 
+                if (i == 0)
+                    cssPathStr += parentElementSelectors[i]; // + ' ' + cssPathStr;
+                else
+                    cssPathStr += ' ' + parentElementSelectors[i]; // + ' ' + cssPathStr;
+
                 // If there's no CSS class, or if the semi-complete CSS selector path matches multiple elements:
                 if ($(cssPathStr.split(' ').join(' > ')).length > 1) {
-                    
-                    // Count element's previous siblings for ":nth-child" pseudo-selector.
-                    
-//                    for (nth = 1,
-//                        c = el;
-//                        c !== null && c.previousElementSibling;
-//                        c = c.previousElementSibling,
-//                        nth++);
 
-                        nth = $(cssPathStr.split(' ').join(' > ')).length;
-                    
+                    nth = $(cssPathStr.split(' ').join(' > ')).length;
+
                     // Append ":nth-child()" to CSS path:
                     cssPathStr += ":nth-child(" + nth + ")";
                 }
+            } else {
+                if (i == 0)
+                    cssPathStr += parentSelectors[i]; // + ' ' + cssPathStr;
+                else
+                    cssPathStr += ' ' + parentSelectors[i]; // + ' ' + cssPathStr;
             }
 
         }
