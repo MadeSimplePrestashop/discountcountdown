@@ -190,7 +190,7 @@ class AdminDCController extends ModuleAdminController
                         'query' => array(
                             array(
                                 'id' => '1',
-                                'name' => $this->l('Once the user')
+                                'name' => $this->l('Only once for the user')
                             ),
                             array(
                                 'id' => '2',
@@ -211,10 +211,19 @@ class AdminDCController extends ModuleAdminController
                 array(
                     'tab' => 'discount',
                     'type' => 'text',
-                    'label' => $this->l('Success activation messsage'),
+                    'label' => $this->l('Success alert activation messsage'),
                     'lang' => true,
                     'name' => 'success_message',
                     'desc' => $this->l('For example: Discount will be activated')
+                ),
+                array(
+                    'tab' => 'discount',
+                    'type' => 'text',
+                    'label' => $this->l('Already activated alert messsage'),
+                    'lang' => true,
+                    'name' => 'already_message',
+                    'hint' => $this->l('Availability has to be  set to Only once for the user'),
+                    'desc' => $this->l('For example: Discount has been activated')
                 ),
                 array(
                     'tab' => 'activation',

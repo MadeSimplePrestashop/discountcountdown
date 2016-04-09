@@ -135,6 +135,16 @@ class Discountcountdown extends Module
                 return;
             }
 
+            if (isset($id_discount_from_url)) {
+                $this->context->smarty->assign('dc_message', 1);
+                if ($discountdb['availability'] == 1) {
+                    $exist = DCLogs::getAll(array('c.id_guest' => $this->context->cookie->id_guest, 'c.id_discountcountdown' => $discountdb['id_discountcountdown']));
+                    if ($exist) {
+                        $this->context->smarty->assign('dc_message', 2);
+                    }
+                }
+            }
+
             if (!$id_discount_from_cookie && $id_discount_from_url) {
                 $id_discount = $discountdb['id_discountcountdown'];
                 $this->cookie->__set('id_discount', $id_discount);
@@ -149,15 +159,12 @@ class Discountcountdown extends Module
             }
             //expiration
             if ($activated + ($discountdb['expiration'] * 3600) < time()) {
-//                $exist = DCLogs::getAll(array('c.id_guest' => $this->context->cookie->id_guest, 'c.id_discountcountdown' => $discountdb['id_discountcountdown']));
-//                $exist = DCLogs::exist();
-//                $this->context->smarty->assign('dc_exist', $exist);
+                if (isset($exist) && $exist) {
+                    $this->context->smarty->assign('dc_exist', 1);
+                }
                 return;
             }
 
-            if (isset($id_discount_from_url)) {
-                $this->context->smarty->assign('dc_message', 1);
-            }
 
             $this->context->smarty->assign(array('dc' => $discountdb));
             $this->context->smarty->assign(array('dc_activated' => $activated + ($discountdb['expiration'] * 3600)));

@@ -21,6 +21,7 @@ class DC extends ObjectModel
     public $caption;
     public $display_header;
     public $success_message;
+    public $already_message;
     public $options;
 
     public function __construct($id = null, $id_lang = null, $id_shop = null)
@@ -54,6 +55,7 @@ class DC extends ObjectModel
             'date_to' => array('type' => self::TYPE_DATE),
             'caption' => array('type' => self::TYPE_HTML, 'lang' => true),
             'success_message' => array('type' => self::TYPE_STRING, 'lang' => true),
+            'already_message' => array('type' => self::TYPE_STRING, 'lang' => true),
         )
     );
 

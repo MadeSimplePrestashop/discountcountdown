@@ -44,6 +44,7 @@ CREATE TABLE IF NOT EXISTS `' . _DB_PREFIX_ . 'discountcountdown_lang` (
   `id_lang` int(3) NOT NULL,
   `caption` varchar(255),
   `success_message` varchar(255),
+  `already_message` varchar(255),
   PRIMARY KEY (`id_discountcountdown`,id_lang)
 ) ENGINE = ' . _MYSQL_ENGINE_ . '  ';
 
@@ -59,7 +60,8 @@ $sql[] = 'CREATE TABLE IF NOT EXISTS `' . _DB_PREFIX_ . 'discountcountdown_logs`
     `id_guest` int(11) NOT NULL,
     `id_discountcountdown` int(11) NOT NULL,
     `date` DATETIME NULL,
-    PRIMARY KEY  (`id_discountcountdown_logs`)
+    PRIMARY KEY  (`id_discountcountdown_logs`),
+    INDEX `id_guest` (`id_guest`)
 ) ENGINE=' . _MYSQL_ENGINE_ . ' DEFAULT CHARSET=utf8;';
 
 
