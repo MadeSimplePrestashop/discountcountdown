@@ -91,6 +91,8 @@ class AdminDCController extends ModuleAdminController
             'tabs' => array(
                 'discount' => $this->l('Discount'),
                 'countdown' => $this->l('Countdown'),
+                'display' => $this->l('Display'),
+                'customization' => $this->l('Customization'),
                 'activation' => $this->l('Link to activate discount'),
             ),
             'input' => array(
@@ -248,7 +250,7 @@ class AdminDCController extends ModuleAdminController
         $positions[] = '</div>';
         $this->fields_value['position'] = implode('', $positions);
         $this->fields_form['input'][] = array(
-            'tab' => 'countdown',
+            'tab' => 'display',
             'type' => 'free',
             'name' => 'position',
             'label' => $this->l('Website position picker')
@@ -256,7 +258,7 @@ class AdminDCController extends ModuleAdminController
         $this->fields_value['element'] = '<input value="' . (isset($options->element) ? $options->element : '' ) . '" name="element" id="element" type="text">';
         $this->fields_form['input'][] = array(
             'class' => 'element',
-            'tab' => 'countdown',
+            'tab' => 'display',
             'type' => 'free',
             'name' => 'element',
             'desc' => $this->l('If leave empty, countdown will not displayed'),
@@ -264,7 +266,7 @@ class AdminDCController extends ModuleAdminController
         );
 
         $this->fields_form['input'][] = array(
-            'tab' => 'countdown',
+            'tab' => 'display',
             'type' => 'radio',
             'label' => $this->l('Insert slider'),
             'name' => 'insert',
@@ -301,14 +303,14 @@ class AdminDCController extends ModuleAdminController
 
 
         $this->fields_form['input'][] = array(
-            'tab' => 'countdown',
+            'tab' => 'customization',
             'type' => 'color',
             'label' => $this->l('Background color'),
             'name' => 'backgroundColor',
             'default_value' => isset($options->backgroundColor) ? $options->backgroundColor : '#f6f6f6',
         );
         $this->fields_form['input'][] = array(
-            'tab' => 'countdown',
+            'tab' => 'customization',
             'type' => 'text',
             'label' => 'Border width',
             'name' => 'borderWidth',
@@ -317,7 +319,7 @@ class AdminDCController extends ModuleAdminController
         );
 
         $this->fields_form['input'][] = array(
-            'tab' => 'countdown',
+            'tab' => 'customization',
             'type' => 'select',
             'label' => $this->l('Border Style'),
             'name' => 'borderStyle',
@@ -368,7 +370,7 @@ class AdminDCController extends ModuleAdminController
 
 
         $this->fields_form['input'][] = array(
-            'tab' => 'countdown',
+            'tab' => 'customization',
             'type' => 'color',
             'label' => $this->l('Border color'),
             'name' => 'borderColor',
@@ -376,7 +378,7 @@ class AdminDCController extends ModuleAdminController
         );
 
         $this->fields_form['input'][] = array(
-            'tab' => 'countdown',
+            'tab' => 'customization',
             'type' => 'text',
             'label' => 'Inline CSS style',
             'name' => 'style',

@@ -25,7 +25,7 @@ class Discountcountdown extends Module
         $this->name = 'discountcountdown';
         $this->tab = 'administration';
         $this->version = '1.0.0';
-        $this->author = 'kuzmany.biz/prestashop';
+        $this->author = 'kuzmany';
         $this->need_instance = 0;
         $this->bootstrap = true;
         $this->module_key = '44258249c62bc824d6de016c55d5265d';
@@ -107,9 +107,11 @@ class Discountcountdown extends Module
 
     public function verifyDiscount()
     {
+
         if (Cache::retrieve(__CLASS__ . 'c')) {
             $discountdb = Cache::retrieve(__CLASS__ . 'c');
         } else {
+            $activated = time();
             //if get param
             if (Tools::getIsset('dc')) {
                 $discountdb = $this->verifyDiscountFromDb($this->cipherTool->decrypt((Tools::getValue('dc'))));
@@ -118,7 +120,9 @@ class Discountcountdown extends Module
                 }
             }
             $id_discount_from_cookie = $this->getCookie('id_discount');
-            $activated = $this->getCookie('activated');
+            if ($id_discount_from_cookie) {
+                $activated = $this->getCookie('activated');
+            }
             if (!isset($id_discount_from_url) && !$id_discount_from_cookie) {
                 return;
             }
@@ -127,28 +131,37 @@ class Discountcountdown extends Module
                 $discountdb = $this->verifyDiscountFromDb($id_discount_from_cookie);
             }
 
-            if (isset($id_discount_from_cookie) && isset($id_discount_from_url) && $id_discount_from_cookie != $id_discount_from_url) {
-                // remove rom cookie
-                $id_discount_from_cookie = '';
-            }
             if (!$discountdb) {
                 return;
             }
 
+            if (isset($id_discount_from_cookie) && isset($id_discount_from_url) && $id_discount_from_cookie != $id_discount_from_url) {
+                // remove rom cookie
+                $id_discount_from_cookie = '';
+            }
+
+            //expiration
+            if ($activated + ($discountdb['expiration'] * 3600) < time()) {
+                if ($discountdb['availability'] == 2) {
+                    // remove rom cookie
+                    $activated = time();
+                    $id_discount_from_cookie = '';
+                } else {
+                    return;
+                }
+            }
+
             if (isset($id_discount_from_url)) {
                 $this->context->smarty->assign('dc_message', 1);
-                if ($discountdb['availability'] == 1) {
-                    $exist = DCLogs::getAll(array('c.id_guest' => $this->context->cookie->id_guest, 'c.id_discountcountdown' => $discountdb['id_discountcountdown']));
-                    if ($exist) {
-                        $this->context->smarty->assign('dc_message', 2);
-                    }
+                $exist = DCLogs::getAll(array('c.id_guest' => $this->context->cookie->id_guest, 'c.id_discountcountdown' => $discountdb['id_discountcountdown']));
+                if ($exist) {
+                    $this->context->smarty->assign('dc_message', 2);
                 }
             }
 
             if (!$id_discount_from_cookie && $id_discount_from_url) {
                 $id_discount = $discountdb['id_discountcountdown'];
                 $this->cookie->__set('id_discount', $id_discount);
-                $activated = time();
                 $this->cookie->__set('activated', $activated);
 
                 $logs = new DCLogs();
@@ -156,13 +169,6 @@ class Discountcountdown extends Module
                 $logs->id_discountcountdown = $discountdb['id_discountcountdown'];
                 $logs->date = time();
                 $logs->save();
-            }
-            //expiration
-            if ($activated + ($discountdb['expiration'] * 3600) < time()) {
-                if (isset($exist) && $exist) {
-                    $this->context->smarty->assign('dc_exist', 1);
-                }
-                return;
             }
 
 

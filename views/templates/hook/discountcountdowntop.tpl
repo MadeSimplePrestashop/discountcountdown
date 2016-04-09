@@ -1,9 +1,9 @@
 {if isset($dc) && $dc && !empty($dc.options->element)}    
     {if isset($dc_message)}
         <script type="text/javascript">
-            {if $dc_message==1}
+            {if $dc_message==1 && $dc.success_message}
             alert('{$dc.success_message|escape:'html':'UTF-8'}');
-            {elseif $dc_message==2}
+            {elseif $dc_message==2 && $dc.already_message}
             alert('{$dc.already_message|escape:'html':'UTF-8'}');
             {/if}
         </script>
