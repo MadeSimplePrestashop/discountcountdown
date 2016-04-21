@@ -146,6 +146,7 @@ class Discountcountdown extends Module
                     // remove rom cookie
                     $activated = time();
                     $id_discount_from_cookie = '';
+                    unset($discountdb);
                 } else {
                     return;
                 }
